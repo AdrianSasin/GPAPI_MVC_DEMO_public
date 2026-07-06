@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36908.2 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GPAPI_MVC_DEMO", "GPAPI_MVC_DEMO.csproj", "{E85486C7-22F0-4DE9-812D-A73FC597AD1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E85486C7-22F0-4DE9-812D-A73FC597AD1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E85486C7-22F0-4DE9-812D-A73FC597AD1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E85486C7-22F0-4DE9-812D-A73FC597AD1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E85486C7-22F0-4DE9-812D-A73FC597AD1D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DEF047A0-58EF-4BFE-90F9-F3876BF92912}
+	EndGlobalSection
+EndGlobal

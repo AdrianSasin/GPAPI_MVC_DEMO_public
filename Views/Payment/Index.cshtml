@@ -1,0 +1,64 @@
+﻿@model GPAPI_MVC_DEMO.Models.PaymentRequestModel
+
+<h1>Demo eService GPAPI .NET SDK</h1>
+
+@if (ViewBag.Error != null)
+{
+    <div style="color: red; margin-bottom: 20px;">
+        <strong>Błąd:</strong> @ViewBag.Error
+    </div>
+}
+
+<form asp-action="Index" method="post">
+    @Html.AntiForgeryToken()
+
+    <div>
+        <label>Imię</label><br />
+        <input asp-for="FirstName" />
+    </div>
+
+    <div>
+        <label>Nazwisko</label><br />
+        <input asp-for="LastName" />
+    </div>
+
+    <div>
+        <label>Email</label><br />
+        <input asp-for="Email" />
+    </div>
+
+    <div>
+        <label>Adres</label><br />
+        <input asp-for="Address" />
+    </div>
+
+    <div>
+        <label>Miasto</label><br />
+        <input asp-for="City" />
+    </div>
+
+    <div>
+        <label>Kod pocztowy</label><br />
+        <input asp-for="PostalCode" />
+    </div>
+
+    <div>
+        <label>Kwota</label><br />
+        <input asp-for="Amount" />
+    </div>
+
+    <div style ="color: blue;">
+        <label>Język</label><br />
+        <input asp-for="Language" />
+    </div>
+
+    <br />
+
+    <button type="submit" formaction="/Payment/Index">
+        Zapłać kartą przez HPP
+    </button>
+
+    <button type="submit" formaction="/Payment/Blik">
+        Zapłać BLIK
+    </button>
+</form>
