@@ -10,4 +10,8 @@
     <PackageReference Include="GlobalPayments.Api" Version="11.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\payments\" />
+  </ItemGroup>
+
 </Project>
