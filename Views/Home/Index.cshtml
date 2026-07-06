@@ -1,8 +1,14 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Strona główna";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center" style="margin-top: 50px;">
+    <h1 class="display-4">Witaj w aplikacji demonstracyjnej</h1>
+    <p>Zobacz możliwości, jakie daje bramka płatnicza od eService i Global Payments</p>
+
+    <!-- Link przekierowujący do kontrolera Payment i akcji Index -->
+    <a asp-controller="Payment" asp-action="Index"
+       style="display: inline-block; padding: 12px 24px; background-color: #475569; color: #ffffff; text-decoration: none; margin-top: 20px; font-weight: 500;">
+        Przejdź do formularza płatności
+    </a>
 </div>
