@@ -1,7 +1,9 @@
 ﻿@model GPAPI_MVC_DEMO.Models.PaymentRequestModel
+@{
+    decimal amount = 21.37m;
+}
 
 <style>
-    /* Główny kontener układający kolumny obok siebie */
     .layout-wrapper {
         display: flex;
         flex-direction: row;
@@ -12,43 +14,42 @@
         color: #333;
     }
 
-    .minimal-container {
-        background-color: #ffffff;
+    .main-form {
+        background-color: #f8fafc;
         padding: 40px 30px 30px 30px;
-        border: 1px solid #eaeaea;
+        border: 1px solid #e5e7eb; 
+        border-radius: 12px;       
         flex: 1 1 50%;
-        min-width: 300px; /* usunięto sztywne 500px, by poprawnie zachowywało się mobilnie */
+        min-width: 300px;
     }
 
     .product-summary {
         background-color: #f8fafc;
         padding: 30px;
-        border: 1px solid #eaeaea;
+        border: 1px solid #e5e7eb; 
+        border-radius: 12px;       
         flex: 0 1 350px;
         height: fit-content;
         position: sticky;
-        top: 20px; /* Sticky spowoduje, że podsumowanie przypnie się do góry przy scrollowaniu (na dużych ekranach) */
+        top: 20px;
     }
 
-    /* --- MEDIA QUERY DLA URZĄDZEŃ MOBILNYCH (np. telefony) --- */
     @@media (max-width: 768px) {
         .layout-wrapper {
-            flex-direction: column-reverse; /* Prawa kolumna wskoczy nad formularz */
+            flex-direction: column-reverse;
             gap: 20px;
         }
         
         .product-summary {
             flex: 1 1 auto;
-            max-width: 100%; /* Rozszerzenie na całą dostępną szerokość */
-            position: static; /* Usunięcie sticky dla mobilnych przy układzie wertykalnym */
+            max-width: 100%;
+            position: static;
         }
     }
 
-    /* Klasy do obsługi tłumaczeń */
     #AppContainer[data-lang="EN"] .lang-pl { display: none !important; }
     #AppContainer[data-lang="PL"] .lang-en { display: none !important; }
 
-    /* Nagłówek lewej kolumny */
     .form-header {
         display: flex;
         justify-content: space-between;
@@ -63,7 +64,8 @@
 
     .lang-btn {
         background-color: #f3f4f6;
-        border: 1px solid #d1d5db;
+        border: 1px solid #e5e7eb; 
+        border-radius: 6px;        
         padding: 5px 10px;
         cursor: pointer;
         font-weight: bold;
@@ -90,7 +92,8 @@
     .form-group input:not([type="hidden"]) {
         width: 100%;
         padding: 10px;
-        border: 1px solid #d1d5db;
+        border: 1px solid #e5e7eb; 
+        border-radius: 6px;
         font-size: 14px;
         box-sizing: border-box;
         outline: none;
@@ -107,12 +110,13 @@
         background-color: #475569;
         color: #ffffff;
         border: none;
+        border-radius: 6px;
         padding: 12px 24px;
         font-size: 15px;
         font-weight: 500;
         cursor: pointer;
         transition: background-color 0.2s ease-in-out;
-        width: 100%; /* Usunięto sztywne min-width dla responsywności przycisków */
+        width: 100%;    
         text-align: center;
     }
 
@@ -129,10 +133,14 @@
     }
 
     .payment-box {
-        border: 1px solid #f3f4f6;
+        border: 1px solid #e5e7eb;
         padding: 24px;
         margin-top: 25px;
-        background-color: #ffffff;
+        background-color: #f8fafc;
+        border-radius: 8px;
+        box-shadow: 
+            4px 4px 8px rgba(0, 0, 0, 0.08),
+            -4px -4px 8px rgba(255, 255, 255, 1);
     }
 
     .payment-note {
@@ -152,17 +160,22 @@
         text-decoration: underline;
     }
 
-    /* Style do makiety produktu */
     .product-image-placeholder {
         width: 100%;
         height: 200px;
-        background-color: #e5e7eb;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #9ca3af;
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;        
         margin-bottom: 20px;
-        font-size: 14px;
+        overflow: hidden;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .product-image-placeholder img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .product-details {
@@ -178,12 +191,67 @@
         font-size: 18px;
         font-weight: 600;
     }
+
+    .form-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 
+            2px 2px 4px rgba(0, 0, 0, 0.1),
+            -2px -2px 4px rgba(255, 255, 255, 1);
+    }
+
+    h2 {
+        font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+        font-size: 19px;
+        font-weight: 700;
+        margin: 0 0 20px 0; 
+        color: #1e293b;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        letter-spacing: -0.02em;
+    }
+
+    h2:after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        bottom: -8px; 
+        left: 0;
+        background: linear-gradient(to right, #cbd5e1, transparent); 
+    }
+
+    .step-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border: 2px solid #cbd5e1;
+        border-radius: 50%;
+        font-size: 15px;
+        font-weight: 700;
+        color: #475569;
+        background-color: #f8fafc;
+        flex-shrink: 0;
+    }
+
+    .left-column {
+        flex: 1 1 50%;
+        min-width: 300px;
+        display: flex;
+        flex-direction: column;
+    }
 </style>
 
 <div class="layout-wrapper" id="AppContainer" data-lang="PL">
 
-    <!-- Lewa Kolumna: Formularz Płatności -->
-    <div class="minimal-container">
+    <div class="left-column">
         
         <div class="form-header">
             <h1 style="font-size: 24px; font-weight: 600; margin: 0;">
@@ -191,7 +259,6 @@
                 <span class="lang-en">eService GPAPI .NET SDK Demo</span>
             </h1>
             
-            <!-- Kontrolki do zmiany języka (ustawione w jednej linii po prawej obok tytułu) -->
             <div class="lang-switcher">
                 <button type="button" class="lang-btn" onclick="setLanguage('PL')">PL</button>
                 <button type="button" class="lang-btn" onclick="setLanguage('EN')">EN</button>
@@ -200,7 +267,7 @@
 
         @if (ViewBag.Error != null)
         {
-            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; padding: 12px; margin-bottom: 25px; font-size: 14px;">
+            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; padding: 12px; margin-bottom: 25px; font-size: 14px; border-radius: 6px;">
                 <strong>
                     <span class="lang-pl">Błąd:</span>
                     <span class="lang-en">Error:</span>
@@ -208,67 +275,75 @@
             </div>
         }
 
-        <form asp-action="Index" method="post">
+        <form asp-action="Index" method="post" style="display: flex; flex-direction: column; height: 100%;">
             @Html.AntiForgeryToken()
 
-            <!-- Ukryte pola do przekazania danych do modelu -->
             <input type="hidden" asp-for="Language" id="LanguageInput" value="PL" />
-            <input type="hidden" asp-for="Amount" value="1299" id="AmountInput" />
+            <input type="hidden" asp-for="Amount" value="@amount" id="AmountInput" />
 
-            <div class="form-group">
-                <label>
-                    <span class="lang-pl">Imię</span>
-                    <span class="lang-en">First Name</span>
-                </label>
-                <input asp-for="FirstName" />
+            <h2>
+                <span class="step-badge">1</span>
+                <span class="lang-pl">Dane kontaktowe</span>
+                <span class="lang-en">Contact Details</span>
+            </h2>
+            
+            <div class="form-card">
+                <div class="form-group">
+                    <label>
+                        <span class="lang-pl">Imię</span>
+                        <span class="lang-en">First Name</span>
+                    </label>
+                    <input asp-for="FirstName" />
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="lang-pl">Nazwisko</span>
+                        <span class="lang-en">Last Name</span>
+                    </label>
+                    <input asp-for="LastName" />
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="lang-pl">Email</span>
+                        <span class="lang-en">Email</span>
+                    </label>
+                    <input asp-for="Email" />
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="lang-pl">Adres</span>
+                        <span class="lang-en">Address</span>
+                    </label>
+                    <input asp-for="Address" />
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="lang-pl">Miasto</span>
+                        <span class="lang-en">City</span>
+                    </label>
+                    <input asp-for="City" />
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span class="lang-pl">Kod pocztowy</span>
+                        <span class="lang-en">Postal Code</span>
+                    </label>
+                    <input asp-for="PostalCode" />
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>
-                    <span class="lang-pl">Nazwisko</span>
-                    <span class="lang-en">Last Name</span>
-                </label>
-                <input asp-for="LastName" />
-            </div>
-
-            <div class="form-group">
-                <label>
-                    <span class="lang-pl">Email</span>
-                    <span class="lang-en">Email</span>
-                </label>
-                <input asp-for="Email" />
-            </div>
-
-            <div class="form-group">
-                <label>
-                    <span class="lang-pl">Adres</span>
-                    <span class="lang-en">Address</span>
-                </label>
-                <input asp-for="Address" />
-            </div>
-
-            <div class="form-group">
-                <label>
-                    <span class="lang-pl">Miasto</span>
-                    <span class="lang-en">City</span>
-                </label>
-                <input asp-for="City" />
-            </div>
-
-            <div class="form-group">
-                <label>
-                    <span class="lang-pl">Kod pocztowy</span>
-                    <span class="lang-en">Postal Code</span>
-                </label>
-                <input asp-for="PostalCode" />
-            </div>
-
+            <h2>
+                <span class="step-badge">2</span>
+                <span class="lang-pl">Wybierz metodę płatności</span>
+                <span class="lang-en">Select payment method</span>
+            </h2>
+            
             <div class="payment-box">
-                <p style="font-weight: 600; font-size: 16px; margin-top: 0; margin-bottom: 20px; color: #1e293b;">
-                    <span class="lang-pl">Wybierz metodę płatności:</span>
-                    <span class="lang-en">Select payment method:</span>
-                </p>
-                
                 <div style="margin-bottom: 25px;">
                     <div style="display: flex; align-items: center; margin-bottom: 8px;">
                         <div style="width: 60px; flex-shrink: 0; text-align: center; margin-right: 20px;">
@@ -312,7 +387,6 @@
         </form>
     </div>
 
-    <!-- Prawa Kolumna: Makieta Wybranego Produktu -->
     <div class="product-summary">
         <h2 style="font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 20px;">
             <span class="lang-pl">Podsumowanie zamówienia</span>
@@ -320,21 +394,20 @@
         </h2>
 
         <div class="product-image-placeholder">
-            <span class="lang-pl">[ Obraz produktu ]</span>
-            <span class="lang-en">[ Product Image ]</span>
+            <img src="~/images/payments/terminal.jpg" alt="Terminal płatniczy od eService" />
         </div>
 
         <div class="product-details">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                 <span>
-                    <span class="lang-pl">Ekskluzywny zegarek</span>
-                    <span class="lang-en">Exclusive Watch</span>
+                    <span class="lang-pl">Niezawodny terminal</span>
+                    <span class="lang-en">Reliable POS</span>
                 </span>
                 <span>1 x</span>
             </div>
             <div style="color: #6b7280; font-size: 13px;">
-                <span class="lang-pl">Kolekcja klasyczna, kolor czarny</span>
-                <span class="lang-en">Classic collection, black color</span>
+                <span class="lang-pl">od najlepszej firmy :)</span>
+                <span class="lang-en">from the best company :)</span>
             </div>
         </div>
 
@@ -343,7 +416,7 @@
                 <span class="lang-pl">Do zapłaty:</span>
                 <span class="lang-en">Total:</span>
             </span>
-            <span>1299.00 PLN</span>
+            <span>@amount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) PLN</span>
         </div>
     </div>
 
