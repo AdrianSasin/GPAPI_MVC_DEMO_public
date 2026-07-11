@@ -1,13 +1,78 @@
 ﻿@model GPAPI_MVC_DEMO.Models.PaymentRequestModel
 
 <style>
+    /* Główny kontener układający kolumny obok siebie */
+    .layout-wrapper {
+        display: flex;
+        flex-direction: row;
+        gap: 30px;
+        max-width: 1000px;
+        margin: 0 auto;
+        font-family: inherit;
+        color: #333;
+    }
+
     .minimal-container {
         background-color: #ffffff;
+        padding: 40px 30px 30px 30px;
+        border: 1px solid #eaeaea;
+        flex: 1 1 50%;
+        min-width: 300px; /* usunięto sztywne 500px, by poprawnie zachowywało się mobilnie */
+    }
+
+    .product-summary {
+        background-color: #f8fafc;
         padding: 30px;
         border: 1px solid #eaeaea;
-        max-width: 600px;
-        color: #333;
-        font-family: inherit;
+        flex: 0 1 350px;
+        height: fit-content;
+        position: sticky;
+        top: 20px; /* Sticky spowoduje, że podsumowanie przypnie się do góry przy scrollowaniu (na dużych ekranach) */
+    }
+
+    /* --- MEDIA QUERY DLA URZĄDZEŃ MOBILNYCH (np. telefony) --- */
+    @@media (max-width: 768px) {
+        .layout-wrapper {
+            flex-direction: column-reverse; /* Prawa kolumna wskoczy nad formularz */
+            gap: 20px;
+        }
+        
+        .product-summary {
+            flex: 1 1 auto;
+            max-width: 100%; /* Rozszerzenie na całą dostępną szerokość */
+            position: static; /* Usunięcie sticky dla mobilnych przy układzie wertykalnym */
+        }
+    }
+
+    /* Klasy do obsługi tłumaczeń */
+    #AppContainer[data-lang="EN"] .lang-pl { display: none !important; }
+    #AppContainer[data-lang="PL"] .lang-en { display: none !important; }
+
+    /* Nagłówek lewej kolumny */
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+    }
+
+    .lang-switcher {
+        display: flex;
+        gap: 5px;
+    }
+
+    .lang-btn {
+        background-color: #f3f4f6;
+        border: 1px solid #d1d5db;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #374151;
+        transition: background-color 0.2s;
+    }
+
+    .lang-btn:hover {
+        background-color: #e5e7eb;
     }
 
     .form-group {
@@ -22,7 +87,7 @@
         font-size: 14px;
     }
 
-    .form-group input {
+    .form-group input:not([type="hidden"]) {
         width: 100%;
         padding: 10px;
         border: 1px solid #d1d5db;
@@ -47,7 +112,7 @@
         font-weight: 500;
         cursor: pointer;
         transition: background-color 0.2s ease-in-out;
-        min-width: 240px;
+        width: 100%; /* Usunięto sztywne min-width dla responsywności przycisków */
         text-align: center;
     }
 
@@ -67,7 +132,7 @@
         border: 1px solid #f3f4f6;
         padding: 24px;
         margin-top: 25px;
-        background-color: #f8fafc;
+        background-color: #ffffff;
     }
 
     .payment-note {
@@ -75,6 +140,7 @@
         font-size: 13px; 
         color: #6b7280; 
         line-height: 1.4;
+        margin-top: 5px;
     }
 
     .payment-note a {
@@ -85,95 +151,207 @@
     .payment-note a:hover {
         text-decoration: underline;
     }
-</style>
 
-<div class="minimal-container">
-    <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 25px;">Demo eService GPAPI .NET SDK</h1>
-
-    @if (ViewBag.Error != null)
-    {
-        <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; padding: 12px; margin-bottom: 25px; font-size: 14px;">
-            <strong>Błąd:</strong> @ViewBag.Error
-        </div>
+    /* Style do makiety produktu */
+    .product-image-placeholder {
+        width: 100%;
+        height: 200px;
+        background-color: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        margin-bottom: 20px;
+        font-size: 14px;
     }
 
-    <form asp-action="Index" method="post">
-        @Html.AntiForgeryToken()
+    .product-details {
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 15px 0;
+        margin-bottom: 15px;
+    }
 
-        <div class="form-group">
-            <label>Imię</label>
-            <input asp-for="FirstName" />
-        </div>
+    .product-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: 600;
+    }
+</style>
 
-        <div class="form-group">
-            <label>Nazwisko</label>
-            <input asp-for="LastName" />
-        </div>
+<div class="layout-wrapper" id="AppContainer" data-lang="PL">
 
-        <div class="form-group">
-            <label>Email</label>
-            <input asp-for="Email" />
-        </div>
-
-        <div class="form-group">
-            <label>Adres</label>
-            <input asp-for="Address" />
-        </div>
-
-        <div class="form-group">
-            <label>Miasto</label>
-            <input asp-for="City" />
-        </div>
-
-        <div class="form-group">
-            <label>Kod pocztowy</label>
-            <input asp-for="PostalCode" />
-        </div>
-
-        <div class="form-group">
-            <label>Kwota</label>
-            <input asp-for="Amount" />
-        </div>
-
-        <div class="form-group">
-            <label>Język</label>
-            <input asp-for="Language" />
-        </div>
-
-        <div class="payment-box">
-            <p style="font-weight: 600; font-size: 16px; margin-top: 0; margin-bottom: 20px; color: #1e293b;">
-                Wybierz metodę płatności:
-            </p>
+    <!-- Lewa Kolumna: Formularz Płatności -->
+    <div class="minimal-container">
+        
+        <div class="form-header">
+            <h1 style="font-size: 24px; font-weight: 600; margin: 0;">
+                <span class="lang-pl">Demo eService GPAPI .NET SDK</span>
+                <span class="lang-en">eService GPAPI .NET SDK Demo</span>
+            </h1>
             
-            <div style="margin-bottom: 25px;">
-                <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <div style="width: 60px; text-align: center; margin-right: 20px;">
-                        <img src="~/images/payments/cards.png" alt="Karta płatnicza" style="width: 100%; max-width: 50px; opacity: 0.9;" />
-                    </div>
-                    <button type="submit" class="btn-minimal" formaction="/Payment/Index">
-                        Zapłać kartą przez HPP
-                    </button>
-                </div>
-                <div class="payment-note">
-                    Demonstracja Hosted Payment Page: <br />
-                    <a href="https://developer.eservicegateway.com/docs/payments/online/hosted-payment-page-overview" target="_blank">Zobacz dokumentację eService &rarr;</a>
-                </div>
-            </div>
-
-            <div>
-                <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <div style="width: 60px; text-align: center; margin-right: 20px;">
-                        <img src="~/images/payments/blik.png" alt="BLIK" style="width: 100%; max-width: 50px; opacity: 0.9;" />
-                    </div>
-                    <button type="submit" class="btn-minimal btn-blik" formaction="/Payment/Blik">
-                        Zapłać BLIK
-                    </button>
-                </div>
-                <div class="payment-note">
-                    Demonstracja APM BLIK: <br />
-                    <a href="https://developer.eservicegateway.com/docs/payments/payment-methods/blik-overview" target="_blank">Zobacz dokumentację eService &rarr;</a>
-                </div>
+            <!-- Kontrolki do zmiany języka (ustawione w jednej linii po prawej obok tytułu) -->
+            <div class="lang-switcher">
+                <button type="button" class="lang-btn" onclick="setLanguage('PL')">PL</button>
+                <button type="button" class="lang-btn" onclick="setLanguage('EN')">EN</button>
             </div>
         </div>
-    </form>
+
+        @if (ViewBag.Error != null)
+        {
+            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; padding: 12px; margin-bottom: 25px; font-size: 14px;">
+                <strong>
+                    <span class="lang-pl">Błąd:</span>
+                    <span class="lang-en">Error:</span>
+                </strong> @ViewBag.Error
+            </div>
+        }
+
+        <form asp-action="Index" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- Ukryte pola do przekazania danych do modelu -->
+            <input type="hidden" asp-for="Language" id="LanguageInput" value="PL" />
+            <input type="hidden" asp-for="Amount" value="1299" id="AmountInput" />
+
+            <div class="form-group">
+                <label>
+                    <span class="lang-pl">Imię</span>
+                    <span class="lang-en">First Name</span>
+                </label>
+                <input asp-for="FirstName" />
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <span class="lang-pl">Nazwisko</span>
+                    <span class="lang-en">Last Name</span>
+                </label>
+                <input asp-for="LastName" />
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <span class="lang-pl">Email</span>
+                    <span class="lang-en">Email</span>
+                </label>
+                <input asp-for="Email" />
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <span class="lang-pl">Adres</span>
+                    <span class="lang-en">Address</span>
+                </label>
+                <input asp-for="Address" />
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <span class="lang-pl">Miasto</span>
+                    <span class="lang-en">City</span>
+                </label>
+                <input asp-for="City" />
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <span class="lang-pl">Kod pocztowy</span>
+                    <span class="lang-en">Postal Code</span>
+                </label>
+                <input asp-for="PostalCode" />
+            </div>
+
+            <div class="payment-box">
+                <p style="font-weight: 600; font-size: 16px; margin-top: 0; margin-bottom: 20px; color: #1e293b;">
+                    <span class="lang-pl">Wybierz metodę płatności:</span>
+                    <span class="lang-en">Select payment method:</span>
+                </p>
+                
+                <div style="margin-bottom: 25px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <div style="width: 60px; flex-shrink: 0; text-align: center; margin-right: 20px;">
+                            <img src="~/images/payments/cards.png" alt="Karta płatnicza" style="width: 100%; max-width: 50px; opacity: 0.9;" />
+                        </div>
+                        <button type="submit" class="btn-minimal" formaction="/Payment/Index">
+                            <span class="lang-pl">Zapłać kartą przez HPP</span>
+                            <span class="lang-en">Pay by card via HPP</span>
+                        </button>
+                    </div>
+                    <div class="payment-note">
+                        <span class="lang-pl">Demonstracja Hosted Payment Page:</span>
+                        <span class="lang-en">Hosted Payment Page Demonstration:</span> <br />
+                        <a href="https://developer.eservicegateway.com/docs/payments/online/hosted-payment-page-overview" target="_blank">
+                            <span class="lang-pl">Zobacz dokumentację eService &rarr;</span>
+                            <span class="lang-en">View eService documentation &rarr;</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <div style="width: 60px; flex-shrink: 0; text-align: center; margin-right: 20px;">
+                            <img src="~/images/payments/blik.png" alt="BLIK" style="width: 100%; max-width: 50px; opacity: 0.9;" />
+                        </div>
+                        <button type="submit" class="btn-minimal btn-blik" formaction="/Payment/Blik">
+                            <span class="lang-pl">Zapłać BLIK</span>
+                            <span class="lang-en">Pay with BLIK</span>
+                        </button>
+                    </div>
+                    <div class="payment-note">
+                        <span class="lang-pl">Demonstracja APM BLIK:</span>
+                        <span class="lang-en">APM BLIK Demonstration:</span> <br />
+                        <a href="https://developer.eservicegateway.com/docs/payments/payment-methods/blik-overview" target="_blank">
+                            <span class="lang-pl">Zobacz dokumentację eService &rarr;</span>
+                            <span class="lang-en">View eService documentation &rarr;</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Prawa Kolumna: Makieta Wybranego Produktu -->
+    <div class="product-summary">
+        <h2 style="font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 20px;">
+            <span class="lang-pl">Podsumowanie zamówienia</span>
+            <span class="lang-en">Order Summary</span>
+        </h2>
+
+        <div class="product-image-placeholder">
+            <span class="lang-pl">[ Obraz produktu ]</span>
+            <span class="lang-en">[ Product Image ]</span>
+        </div>
+
+        <div class="product-details">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>
+                    <span class="lang-pl">Ekskluzywny zegarek</span>
+                    <span class="lang-en">Exclusive Watch</span>
+                </span>
+                <span>1 x</span>
+            </div>
+            <div style="color: #6b7280; font-size: 13px;">
+                <span class="lang-pl">Kolekcja klasyczna, kolor czarny</span>
+                <span class="lang-en">Classic collection, black color</span>
+            </div>
+        </div>
+
+        <div class="product-total">
+            <span>
+                <span class="lang-pl">Do zapłaty:</span>
+                <span class="lang-en">Total:</span>
+            </span>
+            <span>1299.00 PLN</span>
+        </div>
+    </div>
+
 </div>
+
+<script>
+    function setLanguage(lang) {
+        document.getElementById('LanguageInput').value = lang;
+        document.getElementById('AppContainer').setAttribute('data-lang', lang);
+    }
+</script>
