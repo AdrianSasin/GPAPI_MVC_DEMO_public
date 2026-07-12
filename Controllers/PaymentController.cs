@@ -53,4 +53,22 @@ public class PaymentController : Controller
             return View("Index", model);
         }
     }
+
+    // BANK PAYMENT PO API
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult BankPayment(PaymentRequestModel model)
+    {
+        try
+        {
+            var redirectUrl = _paymentsService.CreateBankPayment(model);
+            return Redirect(redirectUrl);
+        }
+        catch (Exception ex)
+        {
+            ViewBag.Error = ex.Message;
+            return View("Index", model);
+        }
+    }
 }

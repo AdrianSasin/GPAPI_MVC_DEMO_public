@@ -130,4 +130,53 @@ public class GlobalPaymentsService
 
         return response.AlternativePaymentResponse.RedirectUrl;
     }
+
+    //BANK PAYMENT via API
+
+    // BANK PAYMENT via API
+    public string CreateBankPayment(PaymentRequestModel request)
+    {
+        ServicesContainer.RemoveConfig();
+
+        var config = new GpApiConfig
+        {
+            AppId = _configuration["GlobalPayments:AppId"],
+            AppKey = _configuration["GlobalPayments:AppKey"],
+            Channel = Channel.CardNotPresent,
+            Country = "PL",
+            ServiceUrl = _configuration["GlobalPayments:ServiceUrl"]
+        };
+
+        ServicesContainer.ConfigureService(config, "bankPaymentConfig");
+
+        var paymentMethodDetails = new AlternativePaymentMethod
+        {
+            AlternativePaymentMethodType = AlternativePaymentType.OB,
+            ReturnUrl = "https://example.com/return",
+            StatusUpdateUrl = "https://example.com/status",
+            Descriptor = "Demo Bank Payment transaction",
+            Country = "PL",
+            AccountHolderName = $"{request.FirstName} {request.LastName}"
+        };
+
+        var response = paymentMethodDetails
+            .Charge(request.Amount)
+            .WithCurrency("PLN")
+            .WithDescription("ASP.NET MVC Bank Payment")
+            .WithClientTransactionId(Guid.NewGuid().ToString("N"))
+            .Execute("bankPaymentConfig");
+
+        var redirectUrl = response.AlternativePaymentResponse?.RedirectUrl;
+
+        if (string.IsNullOrWhiteSpace(redirectUrl))
+        {
+            throw new Exception(
+                "Brak RedirectUrl dla Bank Payment. " +
+                $"ResponseCode: {response.ResponseCode}, " +
+                $"ResponseMessage: {response.ResponseMessage}"
+            );
+        }
+
+        return redirectUrl;
+    }
 }
