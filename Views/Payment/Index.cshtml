@@ -5,62 +5,74 @@
 }
 
 <style>
+    :root {
+        --surface: #f8fafc;
+        --white: #fff;
+        --border: #e5e7eb;
+        --text: #1e293b;
+        --muted: #6b7280;
+        --radius: 8px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
     .layout-wrapper {
         display: flex;
-        flex-direction: row;
         gap: 30px;
         max-width: 1000px;
         margin: 0 auto;
-        font-family: inherit;
         color: #333;
     }
 
-    .main-form {
-        background-color: #f8fafc;
-        padding: 40px 30px 30px 30px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
+    .left-column {
+        display: flex;
         flex: 1 1 50%;
+        flex-direction: column;
         min-width: 300px;
     }
 
+    .product-summary,
+    .payment-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
     .product-summary {
-        background-color: #f8fafc;
-        padding: 30px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        flex: 0 1 350px;
-        height: fit-content;
         position: sticky;
         top: 20px;
+        flex: 0 1 350px;
+        height: fit-content;
+        padding: 30px;
+        border-radius: 12px;
     }
 
-    @@media (max-width: 768px) {
-        .layout-wrapper {
-            flex-direction: column-reverse;
-            gap: 20px;
-        }
-
-        .product-summary {
-            flex: 1 1 auto;
-            max-width: 100%;
-            position: static;
-        }
+    .checkout-form {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
-    #AppContainer[data-lang="EN"] .lang-pl {
-        display: none !important;
-    }
-
-    #AppContainer[data-lang="PL"] .lang-en {
-        display: none !important;
+    .form-header,
+    .payment-method-row,
+    .product-row,
+    .product-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .form-header {
-        display: flex;
-        justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 25px;
+    }
+
+    .page-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
     }
 
     .lang-switcher {
@@ -68,91 +80,101 @@
         gap: 5px;
     }
 
-    .lang-btn {
-        background-color: #f3f4f6;
-        border: 1px solid #e5e7eb;
+    .lang-btn,
+    .btn-minimal {
+        border: 0;
         border-radius: 6px;
-        padding: 5px 10px;
         cursor: pointer;
-        font-weight: bold;
+        font-weight: 500;
+        transition: background-color .2s;
+    }
+
+    .lang-btn {
+        padding: 5px 10px;
+        border: 1px solid var(--border);
+        background: #f3f4f6;
         color: #374151;
-        transition: background-color 0.2s;
+        font-weight: 700;
     }
 
         .lang-btn:hover {
-            background-color: #e5e7eb;
+            background: var(--border);
         }
+
+    #AppContainer[data-lang="EN"] .lang-pl,
+    #AppContainer[data-lang="PL"] .lang-en {
+        display: none !important;
+    }
+
+    .error-box {
+        margin-bottom: 25px;
+        padding: 12px;
+        border-left: 4px solid #ef4444;
+        border-radius: 6px;
+        background: #fef2f2;
+        color: #991b1b;
+        font-size: 14px;
+    }
+
+    h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 20px;
+        color: #1e293b;
+    }
+
+
+    .summary-title {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+
+    .form-card {
+        margin-bottom: 20px;
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--white);
+        box-shadow: 2px 2px 4px rgb(0 0 0 / 10%), -2px -2px 4px var(--white);
+    }
 
     .form-group {
         margin-bottom: 15px;
     }
 
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
         .form-group label {
             display: block;
             margin-bottom: 5px;
-            font-weight: 500;
             color: #555;
             font-size: 14px;
+            font-weight: 500;
         }
 
         .form-group input:not([type="hidden"]) {
             width: 100%;
             padding: 10px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border);
             border-radius: 6px;
+            outline: 0;
+            background: #fafafa;
             font-size: 14px;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.2s;
-            background-color: #fafafa;
+            transition: border-color .2s, background-color .2s;
         }
 
         .form-group input:focus {
             border-color: #9ca3af;
-            background-color: #ffffff;
-        }
-
-    .btn-minimal {
-        background-color: #475569;
-        color: #ffffff;
-        border: none;
-        border-radius: 6px;
-        padding: 12px 24px;
-        font-size: 15px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s ease-in-out;
-        width: 100%;
-        text-align: center;
-    }
-
-        .btn-minimal:hover {
-            background-color: #334155;
-        }
-
-    .btn-blik {
-        background-color: #9f1239;
-    }
-
-        .btn-blik:hover {
-            background-color: #881337;
-        }
-
-    .btn-bank-payment {
-        background-color: #0369a1;
-    }
-
-        .btn-bank-payment:hover {
-            background-color: #075985;
+            background: var(--white);
         }
 
     .payment-box {
-        border: 1px solid #e5e7eb;
-        padding: 24px;
         margin-top: 25px;
-        background-color: #f8fafc;
-        border-radius: 8px;
-        box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.08), -4px -4px 8px rgba(255, 255, 255, 1);
+        padding: 24px;
+        box-shadow: 4px 4px 8px rgb(0 0 0 / 8%), -4px -4px 8px var(--white);
     }
 
     .payment-method {
@@ -164,16 +186,14 @@
         }
 
     .payment-method-row {
-        display: flex;
-        align-items: center;
+        justify-content: flex-start;
         margin-bottom: 8px;
     }
 
     .payment-logo {
-        width: 60px;
-        flex-shrink: 0;
-        text-align: center;
+        flex: 0 0 60px;
         margin-right: 20px;
+        text-align: center;
     }
 
         .payment-logo img {
@@ -181,15 +201,44 @@
             max-width: 50px;
             max-height: 42px;
             object-fit: contain;
-            opacity: 0.9;
+            opacity: .9;
+        }
+
+    .btn-minimal {
+        width: 100%;
+        padding: 12px 24px;
+        background: #475569;
+        color: var(--white);
+        font-size: 15px;
+        text-align: center;
+    }
+
+        .btn-minimal:hover {
+            background: #334155;
+        }
+
+    .btn-blik {
+        background: #9f1239;
+    }
+
+        .btn-blik:hover {
+            background: #881337;
+        }
+
+    .btn-bank-payment {
+        background: #0369a1;
+    }
+
+        .btn-bank-payment:hover {
+            background: #075985;
         }
 
     .payment-note {
-        padding-left: 80px;
-        font-size: 13px;
-        color: #6b7280;
-        line-height: 1.4;
         margin-top: 5px;
+        padding-left: 80px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
     }
 
         .payment-note a {
@@ -202,13 +251,12 @@
             }
 
     .product-image-placeholder {
-        width: 100%;
         height: 200px;
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
         margin-bottom: 20px;
         overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--white);
     }
 
         .product-image-placeholder img {
@@ -218,80 +266,36 @@
         }
 
     .product-details {
-        border-top: 1px solid #e5e7eb;
-        border-bottom: 1px solid #e5e7eb;
-        padding: 15px 0;
         margin-bottom: 15px;
+        padding: 15px 0;
+        border-block: 1px solid var(--border);
+    }
+
+    .product-row {
+        margin-bottom: 8px;
+    }
+
+    .product-description {
+        color: var(--muted);
+        font-size: 13px;
     }
 
     .product-total {
-        display: flex;
-        justify-content: space-between;
         font-size: 18px;
         font-weight: 600;
     }
 
-    .form-card {
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1), -2px -2px 4px rgba(255, 255, 255, 1);
-    }
-
-    h2 {
-        font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-size: 19px;
-        font-weight: 700;
-        margin: 0 0 20px 0;
-        color: #1e293b;
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        letter-spacing: -0.02em;
-    }
-
-        h2::after {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            bottom: -8px;
-            left: 0;
-            background: linear-gradient(to right, #cbd5e1, transparent);
+    @@media (max-width: 768px) {
+        .layout-wrapper {
+            flex-direction: column-reverse;
+            gap: 20px;
         }
 
-    .step-badge {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 34px;
-        height: 46px;
-        font-size: 18px;
-        font-weight: 800;
-        color: #1e293b;
-        flex-shrink: 0;
-        z-index: 1;
-    }
-
-        .step-badge::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-color: #fef9c3;
-            border-radius: 4px;
-            transform: skewX(-12deg);
-            z-index: -1;
+        .product-summary {
+            position: static;
+            flex: 1 1 auto;
+            max-width: 100%;
         }
-
-    .left-column {
-        flex: 1 1 50%;
-        min-width: 300px;
-        display: flex;
-        flex-direction: column;
     }
 </style>
 
@@ -300,7 +304,7 @@
     <div class="left-column">
 
         <div class="form-header">
-            <h1 style="font-size: 24px; font-weight: 600; margin: 0;">
+            <h1 class="page-title">
                 <span class="lang-pl">Demo eService GPAPI .NET SDK</span>
                 <span class="lang-en">eService GPAPI .NET SDK Demo</span>
             </h1>
@@ -322,14 +326,7 @@
 
         @if (ViewBag.Error != null)
         {
-            <div style="
-                    background-color: #fef2f2;
-                    border-left: 4px solid #ef4444;
-                    color: #991b1b;
-                    padding: 12px;
-                    margin-bottom: 25px;
-                    font-size: 14px;
-                    border-radius: 6px;">
+            <div class="error-box">
 
                 <strong>
                     <span class="lang-pl">Błąd:</span>
@@ -343,7 +340,7 @@
         <form asp-controller="Payment"
               asp-action="Index"
               method="post"
-              style="display: flex; flex-direction: column; height: 100%;">
+              class="checkout-form">
 
             @Html.AntiForgeryToken()
 
@@ -358,10 +355,8 @@
                    id="AmountInput" />
 
             <h2>
-                <span class="step-badge">1</span>
-
-                <span class="lang-pl">Dane kontaktowe</span>
-                <span class="lang-en">Contact Details</span>
+                <span class="lang-pl">1. Dane kontaktowe</span>
+                <span class="lang-en">1. Contact Details</span>
             </h2>
 
             <div class="form-card">
@@ -423,10 +418,8 @@
             </div>
 
             <h2>
-                <span class="step-badge">2</span>
-
-                <span class="lang-pl">Wybierz metodę płatności</span>
-                <span class="lang-en">Select payment method</span>
+                <span class="lang-pl">2. Wybierz metodę płatności</span>
+                <span class="lang-en">2. Select payment method</span>
             </h2>
 
             <div class="payment-box">
@@ -504,7 +497,7 @@
                                 formaction="@Url.Action("Blik", "Payment")">
 
                             <span class="lang-pl">
-                                    BLIK
+                                BLIK
                             </span>
 
                             <span class="lang-en">
@@ -610,11 +603,7 @@
 
     <div class="product-summary">
 
-        <h2 style="
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 20px;">
+        <h2 class="summary-title">
 
             <span class="lang-pl">
                 Podsumowanie zamówienia
@@ -635,10 +624,7 @@
 
         <div class="product-details">
 
-            <div style="
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 8px;">
+            <div class="product-row">
 
                 <span>
                     <span class="lang-pl">
@@ -654,7 +640,7 @@
 
             </div>
 
-            <div style="color: #6b7280; font-size: 13px;">
+            <div class="product-description">
 
                 <span class="lang-pl">
                     od najlepszej firmy :)
