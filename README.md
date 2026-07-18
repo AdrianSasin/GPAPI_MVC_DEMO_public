@@ -4,7 +4,7 @@ Demo ASP.NET Core MVC application showcasing the integration of the **eService &
 
 ## Features
 
-- 💳 Hosted Payment Page (HPP)
+- 💳 Credit/ Debit Card via Hosted Payment Page (HPP)
 - 📱 BLIK
 - 🏦 Bank Payment (Open Banking)
 - 🛒 eRaty (10 installments, 0% interest)
