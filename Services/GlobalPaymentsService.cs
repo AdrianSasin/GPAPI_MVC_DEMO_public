@@ -91,92 +91,155 @@ public class GlobalPaymentsService
 
         return response.PayByLinkResponse.Url;
     }
+    //ERATY
 
-    // BLIK via API
-    public string CreateBlikPayment(PaymentRequestModel request)
+    public string CreateERatyPayment(PaymentRequestModel request)
     {
-        ServicesContainer.RemoveConfig();
-
-        var config = new GpApiConfig
+        if (request == null)
         {
-            AppId = _configuration["GlobalPayments:AppId"],
-            AppKey = _configuration["GlobalPayments:AppKey"],
-            Channel = Channel.CardNotPresent,
-            Country = "PL",
-            ServiceUrl = _configuration["GlobalPayments:ServiceUrl"]
-        };
-
-        ServicesContainer.ConfigureService(config, "blikConfig");
-
-        var paymentMethodDetails = new AlternativePaymentMethod
-        {
-            AlternativePaymentMethodType = AlternativePaymentType.BLIK,
-            ReturnUrl = "https://example.com/return",
-            StatusUpdateUrl = "https://example.com/status",
-            Descriptor = "Demo BLIK transaction",
-            Country = "PL",
-            AccountHolderName = $"{request.FirstName} {request.LastName}"
-        };
-
-        var response = paymentMethodDetails.Charge(request.Amount)
-            .WithCurrency("PLN")
-            .WithDescription("ASP.NET MVC BLIK payment")
-            .Execute("blikConfig");
-
-        if (response.AlternativePaymentResponse?.RedirectUrl == null)
-        {
-            throw new Exception("Brak RedirectUrl dla BLIK. Response: " + response.ResponseMessage);
+            throw new ArgumentNullException(nameof(request));
         }
 
-        return response.AlternativePaymentResponse.RedirectUrl;
-    }
-
-    //BANK PAYMENT via API
-
-    // BANK PAYMENT via API
-    public string CreateBankPayment(PaymentRequestModel request)
-    {
         ServicesContainer.RemoveConfig();
 
-        var config = new GpApiConfig
-        {
-            AppId = _configuration["GlobalPayments:AppId"],
-            AppKey = _configuration["GlobalPayments:AppKey"],
-            Channel = Channel.CardNotPresent,
-            Country = "PL",
-            ServiceUrl = _configuration["GlobalPayments:ServiceUrl"]
-        };
+        var config = CreateGpApiConfig();
+        const string configName = "apmConfig";
 
-        ServicesContainer.ConfigureService(config, "bankPaymentConfig");
+        ServicesContainer.ConfigureService(config, configName);
 
-        var paymentMethodDetails = new AlternativePaymentMethod
+        var paymentMethod = new AlternativePaymentMethod
         {
-            AlternativePaymentMethodType = AlternativePaymentType.OB,
+            AlternativePaymentMethodType = AlternativePaymentType.ERATY,
             ReturnUrl = "https://example.com/return",
             StatusUpdateUrl = "https://example.com/status",
-            Descriptor = "Demo Bank Payment transaction",
+            CancelUrl = "https://example.com/cancel",
+            Descriptor = "Demo eRaty transaction",
             Country = "PL",
-            AccountHolderName = $"{request.FirstName} {request.LastName}"
+            AccountHolderName = $"{request.FirstName} {request.LastName}",
+
+            Terms = new Terms
+            {
+                TimeUnit = "MONTH",
+                Count = "10",
+                Mode = "NO_INTEREST"
+            }
         };
 
-        var response = paymentMethodDetails
+        var customer = new Customer
+        {
+            Key = Guid.NewGuid().ToString("N"),
+            Email = request.Email
+        };
+
+        var response = paymentMethod
             .Charge(request.Amount)
             .WithCurrency("PLN")
-            .WithDescription("ASP.NET MVC Bank Payment")
+            .WithDescription("ASP.NET MVC eRaty payment")
             .WithClientTransactionId(Guid.NewGuid().ToString("N"))
-            .Execute("bankPaymentConfig");
+            .WithCustomerData(customer)
+            .Execute(configName);
 
         var redirectUrl = response.AlternativePaymentResponse?.RedirectUrl;
 
         if (string.IsNullOrWhiteSpace(redirectUrl))
         {
-            throw new Exception(
-                "Brak RedirectUrl dla Bank Payment. " +
+            throw new InvalidOperationException(
+                $"Brak RedirectUrl dla eRaty. " +
                 $"ResponseCode: {response.ResponseCode}, " +
                 $"ResponseMessage: {response.ResponseMessage}"
             );
         }
 
         return redirectUrl;
+    }
+
+    //ALTERNATIVE PAYMENT METHODS
+
+    public string CreateBlikPayment(PaymentRequestModel request)
+    {
+        return CreateAlternativePayment(
+            request,
+            AlternativePaymentType.BLIK,
+            "BLIK"
+        );
+    }
+
+    public string CreateBankPayment(PaymentRequestModel request)
+    {
+        return CreateAlternativePayment(
+            request,
+            AlternativePaymentType.OB,
+            "Bank Payment"
+        );
+    }
+
+
+    private string CreateAlternativePayment(
+        PaymentRequestModel request,
+        AlternativePaymentType paymentType,
+        string paymentName)
+    {
+        if (request == null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        ServicesContainer.RemoveConfig();
+
+        var config = CreateGpApiConfig();
+        const string configName = "apmConfig";
+
+        ServicesContainer.ConfigureService(config, configName);
+
+        var paymentMethod = new AlternativePaymentMethod
+        {
+            AlternativePaymentMethodType = paymentType,
+            ReturnUrl = "https://example.com/return",
+            StatusUpdateUrl = "https://example.com/status",
+            Descriptor = $"Demo {paymentName} transaction",
+            Country = "PL",
+            AccountHolderName = $"{request.FirstName} {request.LastName}".Trim()
+        };
+
+        var response = paymentMethod
+            .Charge(request.Amount)
+            .WithCurrency("PLN")
+            .WithDescription($"ASP.NET MVC {paymentName} payment")
+            .WithClientTransactionId(Guid.NewGuid().ToString("N"))
+            .Execute(configName);
+
+        var redirectUrl = response.AlternativePaymentResponse?.RedirectUrl;
+
+        if (string.IsNullOrWhiteSpace(redirectUrl))
+        {
+            throw new InvalidOperationException(
+                $"Brak RedirectUrl dla {paymentName}. " +
+                $"ResponseCode: {response.ResponseCode}, " +
+                $"ResponseMessage: {response.ResponseMessage}"
+            );
+        }
+
+        return redirectUrl;
+    }
+
+    // Helper methods for configuration
+    private GpApiConfig CreateGpApiConfig()
+    {
+        return new GpApiConfig
+        {
+            AppId = GetRequiredConfigValue("GlobalPayments:AppId"),
+            AppKey = GetRequiredConfigValue("GlobalPayments:AppKey"),
+            Channel = Channel.CardNotPresent,
+            Country = "PL",
+            ServiceUrl = GetRequiredConfigValue("GlobalPayments:ServiceUrl")
+        };
+    }
+
+    private string GetRequiredConfigValue(string key)
+    {
+        return _configuration[key]
+            ?? throw new InvalidOperationException(
+                $"Brak wymaganej konfiguracji: {key}"
+            );
     }
 }

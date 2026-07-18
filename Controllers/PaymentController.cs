@@ -71,4 +71,22 @@ public class PaymentController : Controller
             return View("Index", model);
         }
     }
+
+    // eRATY PO API
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ERaty(PaymentRequestModel request)
+    {
+        try
+        {
+            var redirectUrl = _paymentsService.CreateERatyPayment(request);
+            return Redirect(redirectUrl);
+        }
+        catch (Exception ex)
+        {
+            ViewBag.Error = ex.Message;
+            return View("Index", request);
+        }
+    }
 }

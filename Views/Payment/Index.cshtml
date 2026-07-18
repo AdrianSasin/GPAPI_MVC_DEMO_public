@@ -191,7 +191,7 @@
     }
 
     .payment-logo {
-        flex: 0 0 60px;
+        flex: 0 0 70px;
         margin-right: 20px;
         text-align: center;
     }
@@ -199,7 +199,7 @@
         .payment-logo img {
             width: 100%;
             max-width: 50px;
-            max-height: 42px;
+            max-height: 70px;
             object-fit: contain;
             opacity: .9;
         }
@@ -233,9 +233,18 @@
             background: #075985;
         }
 
+    .btn-eraty {
+        background: #7c3aed;
+    }
+
+        .btn-eraty:hover {
+            background: #6d28d9;
+        }
+
     .payment-note {
         margin-top: 5px;
-        padding-left: 80px;
+        padding-left: 90px;
+        min-height: 58px; /* wszystkie opisy mają taką samą wysokość */
         color: var(--muted);
         font-size: 13px;
         line-height: 1.4;
@@ -578,6 +587,63 @@
                         <br />
 
                         <a href="https://developer.eservicegateway.com/docs/payments/payment-methods/bank-payment-guide"
+                           target="_blank"
+                           rel="noopener noreferrer">
+
+                            <span class="lang-pl">
+                                Zobacz dokumentację eService &rarr;
+                            </span>
+
+                            <span class="lang-en">
+                                View eService documentation &rarr;
+                            </span>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- eRATY -->
+
+                <div class="payment-method">
+
+                    <div class="payment-method-row">
+
+                        <div class="payment-logo">
+                            <img src="~/images/payments/eraty.svg"
+                                 alt="eRaty" />
+                        </div>
+
+                        <button type="submit"
+                                class="btn-minimal btn-eraty"
+                                formaction="@Url.Action("ERaty", "Payment")">
+
+                            <span class="lang-pl">
+                                eRaty 10 rat 0%
+                            </span>
+
+                            <span class="lang-en">
+                                Pay with eRaty 10 installments 0%
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                    <div class="payment-note">
+
+                        <span class="lang-pl">
+                            Demonstracja APM eRaty:
+                        </span>
+
+                        <span class="lang-en">
+                            APM eRaty demonstration:
+                        </span>
+
+                        <br />
+
+                        <a href="https://developer.eservicegateway.com/docs/payments/payment-methods/eraty-overview"
                            target="_blank"
                            rel="noopener noreferrer">
 
