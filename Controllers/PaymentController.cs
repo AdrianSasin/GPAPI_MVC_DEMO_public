@@ -89,4 +89,25 @@ public class PaymentController : Controller
             return View("Index", request);
         }
     }
+
+    // PAYMENT STATUS CALLBACK
+
+    [HttpGet]
+    public IActionResult Return()
+    {
+        return Content("Powrót z płatności.");
+    }
+
+    [HttpGet]
+    public IActionResult Cancel()
+    {
+        return Content("Płatność została anulowana.");
+    }
+
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public IActionResult Status()
+    {
+        return Ok();
+    }
 }

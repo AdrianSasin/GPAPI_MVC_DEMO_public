@@ -1,16 +1,18 @@
 ﻿using GlobalPayments.Api;
 using GlobalPayments.Api.Entities;
 using GlobalPayments.Api.Entities.Enums;
+using GlobalPayments.Api.PaymentMethods;
 using GlobalPayments.Api.Services;
 using GlobalPayments.Api.Utils;
 using GPAPI_MVC_DEMO.Models;
 using Microsoft.Extensions.Configuration;
-using GlobalPayments.Api.PaymentMethods;
 
 namespace GPAPI_MVC_DEMO.Services;
 
 public class GlobalPaymentsService
 {
+    private const string ApmConfigName = "apmConfig";
+
     private readonly IConfiguration _configuration;
 
     public GlobalPaymentsService(IConfiguration configuration)
@@ -18,21 +20,21 @@ public class GlobalPaymentsService
         _configuration = configuration;
     }
 
-    //HPP LINK
+    // =========================================================
+    // HPP / PAY BY LINK
+    // =========================================================
+
     public string CreatePaymentLink(PaymentRequestModel request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         ServicesContainer.RemoveConfig();
 
-        var config = new GpApiConfig
-        {
-            AppId = _configuration["GlobalPayments:AppId"],
-            AppKey = _configuration["GlobalPayments:AppKey"],
-            Channel = Channel.CardNotPresent,
-            Country = "PL",
-            ServiceUrl = _configuration["GlobalPayments:ServiceUrl"]
-        };
+        var config = CreateGpApiConfig();
 
         ServicesContainer.ConfigureService(config);
+
+        var callbackUrls = GetCallbackUrls();
 
         var customer = new Customer
         {
@@ -55,20 +57,24 @@ public class GlobalPaymentsService
         {
             Type = PayByLinkType.HOSTED_PAYMENT_PAGE,
             UsageMode = PaymentMethodUsageMode.Single,
-            
+
             AllowedPaymentMethods = new[]
             {
-                PaymentMethodName.Card,
-                //PaymentMethodName.DigitalWallet
-                //PaymentMethodName.BLIK,
-                //PaymentMethodName.BankPayment
+                PaymentMethodName.Card
+
+                // Możesz później włączyć kolejne metody:
+                // PaymentMethodName.DigitalWallet,
+                // PaymentMethodName.BLIK,
+                // PaymentMethodName.BankPayment
             },
-           
+
             UsageLimit = 1,
             Name = "Demo payment link",
-            ReturnUrl = "https://example.com/return",
-            CancelUrl = "https://example.com/cancel",
-            StatusUpdateUrl = "https://example.com/status",
+
+            ReturnUrl = callbackUrls.ReturnUrl,
+            CancelUrl = callbackUrls.CancelUrl,
+            StatusUpdateUrl = callbackUrls.StatusUrl,
+
             Configuration = new PaymentMethodConfiguration
             {
                 IsBillingAddressRequired = true,
@@ -76,46 +82,56 @@ public class GlobalPaymentsService
             }
         };
 
-        var response = PayByLinkService.Create(payByLink, request.Amount)
+        var response = PayByLinkService
+            .Create(payByLink, request.Amount)
             .WithCurrency("PLN")
-            .WithClientTransactionId(Guid.NewGuid().ToString("N"))
+            .WithClientTransactionId(CreateTransactionReference())
             .WithAddress(billingAddress, AddressType.Billing)
             .WithCustomerData(customer)
             .WithDescription("ASP.NET MVC demo payment link")
             .Execute();
 
-        if (response.PayByLinkResponse?.Url == null)
+        var paymentUrl = response.PayByLinkResponse?.Url;
+
+        if (string.IsNullOrWhiteSpace(paymentUrl))
         {
-            throw new Exception("Brak URL płatności. Response: " + response.ResponseMessage);
+            throw new InvalidOperationException(
+                $"Brak URL płatności HPP. " +
+                $"ResponseCode: {response.ResponseCode}, " +
+                $"ResponseMessage: {response.ResponseMessage}"
+            );
         }
 
-        return response.PayByLinkResponse.Url;
+        return paymentUrl;
     }
-    //ERATY
+
+    // =========================================================
+    // eRATY
+    // =========================================================
 
     public string CreateERatyPayment(PaymentRequestModel request)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         ServicesContainer.RemoveConfig();
 
         var config = CreateGpApiConfig();
-        const string configName = "apmConfig";
 
-        ServicesContainer.ConfigureService(config, configName);
+        ServicesContainer.ConfigureService(config, ApmConfigName);
+
+        var callbackUrls = GetCallbackUrls();
 
         var paymentMethod = new AlternativePaymentMethod
         {
             AlternativePaymentMethodType = AlternativePaymentType.ERATY,
-            ReturnUrl = "https://example.com/return",
-            StatusUpdateUrl = "https://example.com/status",
-            CancelUrl = "https://example.com/cancel",
+
+            ReturnUrl = callbackUrls.ReturnUrl,
+            CancelUrl = callbackUrls.CancelUrl,
+            StatusUpdateUrl = callbackUrls.StatusUrl,
+
             Descriptor = "Demo eRaty transaction",
             Country = "PL",
-            AccountHolderName = $"{request.FirstName} {request.LastName}",
+            AccountHolderName = GetAccountHolderName(request),
 
             Terms = new Terms
             {
@@ -128,6 +144,8 @@ public class GlobalPaymentsService
         var customer = new Customer
         {
             Key = Guid.NewGuid().ToString("N"),
+            FirstName = request.FirstName,
+            LastName = request.LastName,
             Email = request.Email
         };
 
@@ -135,25 +153,19 @@ public class GlobalPaymentsService
             .Charge(request.Amount)
             .WithCurrency("PLN")
             .WithDescription("ASP.NET MVC eRaty payment")
-            .WithClientTransactionId(Guid.NewGuid().ToString("N"))
+            .WithClientTransactionId(CreateTransactionReference())
             .WithCustomerData(customer)
-            .Execute(configName);
+            .Execute(ApmConfigName);
 
-        var redirectUrl = response.AlternativePaymentResponse?.RedirectUrl;
-
-        if (string.IsNullOrWhiteSpace(redirectUrl))
-        {
-            throw new InvalidOperationException(
-                $"Brak RedirectUrl dla eRaty. " +
-                $"ResponseCode: {response.ResponseCode}, " +
-                $"ResponseMessage: {response.ResponseMessage}"
-            );
-        }
-
-        return redirectUrl;
+        return GetAlternativePaymentRedirectUrl(
+            response,
+            "eRaty"
+        );
     }
 
-    //ALTERNATIVE PAYMENT METHODS
+    // =========================================================
+    // ALTERNATIVE PAYMENT METHODS
+    // =========================================================
 
     public string CreateBlikPayment(PaymentRequestModel request)
     {
@@ -173,42 +185,131 @@ public class GlobalPaymentsService
         );
     }
 
-
     private string CreateAlternativePayment(
         PaymentRequestModel request,
         AlternativePaymentType paymentType,
         string paymentName)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         ServicesContainer.RemoveConfig();
 
         var config = CreateGpApiConfig();
-        const string configName = "apmConfig";
 
-        ServicesContainer.ConfigureService(config, configName);
+        ServicesContainer.ConfigureService(config, ApmConfigName);
+
+        var callbackUrls = GetCallbackUrls();
 
         var paymentMethod = new AlternativePaymentMethod
         {
             AlternativePaymentMethodType = paymentType,
-            ReturnUrl = "https://example.com/return",
-            StatusUpdateUrl = "https://example.com/status",
+
+            ReturnUrl = callbackUrls.ReturnUrl,
+            CancelUrl = callbackUrls.CancelUrl,
+            StatusUpdateUrl = callbackUrls.StatusUrl,
+
             Descriptor = $"Demo {paymentName} transaction",
             Country = "PL",
-            AccountHolderName = $"{request.FirstName} {request.LastName}".Trim()
+            AccountHolderName = GetAccountHolderName(request)
         };
 
         var response = paymentMethod
             .Charge(request.Amount)
             .WithCurrency("PLN")
             .WithDescription($"ASP.NET MVC {paymentName} payment")
-            .WithClientTransactionId(Guid.NewGuid().ToString("N"))
-            .Execute(configName);
+            .WithClientTransactionId(CreateTransactionReference())
+            .Execute(ApmConfigName);
 
-        var redirectUrl = response.AlternativePaymentResponse?.RedirectUrl;
+        return GetAlternativePaymentRedirectUrl(
+            response,
+            paymentName
+        );
+    }
+
+    // =========================================================
+    // CALLBACK URLS
+    // =========================================================
+
+    private PaymentCallbackUrls GetCallbackUrls()
+    {
+        var baseUrl = GetBaseUrl();
+
+        return new PaymentCallbackUrls(
+            ReturnUrl: $"{baseUrl}/Payment/Return",
+            CancelUrl: $"{baseUrl}/Payment/Cancel",
+            StatusUrl: $"{baseUrl}/Payment/Status"
+        );
+    }
+
+    private string GetBaseUrl()
+    {
+        var baseUrl = GetRequiredConfigValue(
+            "PaymentUrls:BaseUrl"
+        );
+
+        return baseUrl.TrimEnd('/');
+    }
+
+    // =========================================================
+    // CONFIGURATION
+    // =========================================================
+
+    private GpApiConfig CreateGpApiConfig()
+    {
+        return new GpApiConfig
+        {
+            AppId = GetRequiredConfigValue(
+                "GlobalPayments:AppId"
+            ),
+
+            AppKey = GetRequiredConfigValue(
+                "GlobalPayments:AppKey"
+            ),
+
+            Channel = Channel.CardNotPresent,
+            Country = "PL",
+
+            ServiceUrl = GetRequiredConfigValue(
+                "GlobalPayments:ServiceUrl"
+            )
+        };
+    }
+
+    private string GetRequiredConfigValue(string key)
+    {
+        var value = _configuration[key];
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new InvalidOperationException(
+                $"Brak wymaganej konfiguracji: {key}"
+            );
+        }
+
+        return value;
+    }
+
+    // =========================================================
+    // HELPERS
+    // =========================================================
+
+    private static string GetAccountHolderName(
+        PaymentRequestModel request)
+    {
+        return $"{request.FirstName} {request.LastName}".Trim();
+    }
+
+    private static string CreateTransactionReference()
+    {
+        return Guid.NewGuid().ToString("N");
+    }
+
+    private static string GetAlternativePaymentRedirectUrl(
+        Transaction response,
+        string paymentName)
+    {
+        var redirectUrl =
+            response.AlternativePaymentResponse?.RedirectUrl;
 
         if (string.IsNullOrWhiteSpace(redirectUrl))
         {
@@ -222,24 +323,9 @@ public class GlobalPaymentsService
         return redirectUrl;
     }
 
-    // Helper methods for configuration
-    private GpApiConfig CreateGpApiConfig()
-    {
-        return new GpApiConfig
-        {
-            AppId = GetRequiredConfigValue("GlobalPayments:AppId"),
-            AppKey = GetRequiredConfigValue("GlobalPayments:AppKey"),
-            Channel = Channel.CardNotPresent,
-            Country = "PL",
-            ServiceUrl = GetRequiredConfigValue("GlobalPayments:ServiceUrl")
-        };
-    }
-
-    private string GetRequiredConfigValue(string key)
-    {
-        return _configuration[key]
-            ?? throw new InvalidOperationException(
-                $"Brak wymaganej konfiguracji: {key}"
-            );
-    }
+    private sealed record PaymentCallbackUrls(
+        string ReturnUrl,
+        string CancelUrl,
+        string StatusUrl
+    );
 }
