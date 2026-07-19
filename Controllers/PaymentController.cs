@@ -19,10 +19,17 @@ public class PaymentController : Controller
         return View(new PaymentRequestModel());
     }
 
+    // HPP / PAYMENT LINK
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Index(PaymentRequestModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
         try
         {
             var paymentUrl = _paymentsService.CreatePaymentLink(model);
@@ -42,9 +49,15 @@ public class PaymentController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Blik(PaymentRequestModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View("Index", model);
+        }
+
         try
         {
             var redirectUrl = _paymentsService.CreateBlikPayment(model);
+
             return Redirect(redirectUrl);
         }
         catch (Exception ex)
@@ -60,9 +73,15 @@ public class PaymentController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult BankPayment(PaymentRequestModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View("Index", model);
+        }
+
         try
         {
             var redirectUrl = _paymentsService.CreateBankPayment(model);
+
             return Redirect(redirectUrl);
         }
         catch (Exception ex)
@@ -76,21 +95,27 @@ public class PaymentController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult ERaty(PaymentRequestModel request)
+    public IActionResult ERaty(PaymentRequestModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View("Index", model);
+        }
+
         try
         {
-            var redirectUrl = _paymentsService.CreateERatyPayment(request);
+            var redirectUrl = _paymentsService.CreateERatyPayment(model);
+
             return Redirect(redirectUrl);
         }
         catch (Exception ex)
         {
             ViewBag.Error = ex.Message;
-            return View("Index", request);
+            return View("Index", model);
         }
     }
 
-    // PAYMENT STATUS CALLBACK
+    // PAYMENT RETURN URL
 
     [HttpGet]
     public IActionResult Return()
@@ -98,11 +123,15 @@ public class PaymentController : Controller
         return Content("Powrót z płatności.");
     }
 
+    // PAYMENT CANCEL URL
+
     [HttpGet]
     public IActionResult Cancel()
     {
         return Content("Płatność została anulowana.");
     }
+
+    // PAYMENT STATUS CALLBACK / WEBHOOK
 
     [HttpPost]
     [IgnoreAntiforgeryToken]
